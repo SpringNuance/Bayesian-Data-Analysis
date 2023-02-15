@@ -1,0 +1,382 @@
+---
+title: "BDA - Assignment 8"
+author: "Anonymous"
+header-includes:
+   - \usepackage{amssymb}
+   - \usepackage{amsmath}
+   - \usepackage{inputenc}
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+  word_document:
+    toc: yes
+    toc_depth: '3'
+urlcolor: blue
+---
+
+```{r, include=FALSE}
+library(aaltobda)
+library(ggplot2)
+library(posterior)
+theme_set(theme_minimal())
+library(cmdstanr)
+library(posterior)
+library(bayesplot)
+
+```
+
+# Model assessment 
+
+LOO-CV for factory data with Stan (6p)\
+
+Use leave-one-out cross-validation (LOO-CV) to assess the predictive performance of the pooled, separate and hierarchical Gaussian models for the factory dataset (see the second exercise in Assignment 7). To read in the data, just use:\
+```{r}
+library(aaltobda)
+library(loo)
+data("factory")
+```
+
+PSIS-LOO is a recently developed method for approximating the exact LOO and is thus not in BDA3. For more information, see the lecture slides and the original paper.\
+Use Stan for fitting the models, and the loo R package for computing the approximate LOO-CV given the posterior samples provided by Stan. You can install the package as\
+```{r}
+#install.packages("loo")
+```
+Python users can use PSIS-LOO implementation in ArviZ library.\
+The report should include the following parts.\
+
+## 1. 
+Fit the models with Stan as instructed in Assignment 7. To use the loo or psisloo functions, you need to compute the log-likelihood values of each observation for every posterior draw (i.e. an S-by-N matrix, where S is the number of posterior draws and N = 30 is the total number of observations). This can be done in the generated quantities block in the Stan code; for a demonstration, see the Gaussian linear model lin.stan in the R Stan examples that can be found here.\
+
+### Separate model
+Example priors from assignment 7 is used:\
+$\mu_j \sim Normal(0, 10)$\
+$\sigma_j \sim gamma(1, 1)$\
+
+```{r, eval=FALSE}
+"
+data {
+  int<lower=0> N; // number of measurements per machine
+  int<lower=0> K; // number of machines
+  array[N] vector[K] y; // An array of vectors containing the table data
+}
+
+parameters {
+  vector[K] mu;
+  vector<lower=0>[K] sigma;
+}
+
+model {
+  for (k in 1:K) {
+    mu[k] ~ normal(0, 10);
+    sigma[k] ~ gamma(1, 1);
+  }
+  for (k in 1:K) {
+    y[, k] ~ normal(mu[k], sigma[k]);
+  }
+}
+
+generated quantities {
+  array[K] real ypred;
+  array[N] vector[K] log_likelihood; // An array of vectors of the log likelihood
+  for (k in 1:K) {
+    ypred[k] = normal_rng(mu[k], sigma[k]);
+  }
+  for (i in 1:N) {
+    for (k in 1:K) {
+      log_likelihood[i][k] = normal_lpdf(y[i][k] | mu[k], sigma[k]);
+    }
+  }
+}
+
+"
+```
+
+### Pooled model
+Example priors from assignment 7 is used:\
+$\mu \sim Normal(0, 10)$\
+$\sigma \sim gamma(1, 1)$\
+```{r, eval=FALSE}
+"
+data {
+  int<lower=0> N; // number of measurements per machine
+  int<lower=0> K; // number of machines
+  array[N] vector[K] y; // An array of vectors containing the table data
+}
+
+parameters {
+  real mu; // There is only a single mu for all machines
+  real<lower=0> sigma; // There is only a single sigma for all machines
+}
+
+model {
+  // priors
+  mu ~ normal(0, 10);
+  sigma ~ gamma(1, 1);
+
+  // likelihood
+  for (k in 1:K){
+    y[,k] ~ normal(mu, sigma);
+  }
+}
+
+generated quantities {
+  real ypred = normal_rng(mu, sigma);
+  array[N] vector[K] log_likelihood; // An array of vectors of the log likelihood
+  for (i in 1:N) {
+    for (k in 1:K) {
+      log_likelihood[i][k] = normal_lpdf(y[i][k] | mu, sigma);
+    }
+  }
+}
+
+"
+```
+
+### Hierarchical model
+Example priors from assignment 7 is used:\
+$\mu_\tau \sim Normal(0, 10)$\
+$\sigma_\tau \sim gamma(1, 1)$\
+$\sigma \sim gamma(1, 1)$\
+```{r, eval=FALSE}
+"
+data {
+  int<lower=0> N; // number of measurements per machine
+  int<lower=0> K; // number of machines
+  array[N] vector[K] y; // An array of vectors containing the table data
+}
+
+parameters {
+  vector[K] mu;
+  real sigma;
+  real mu_tau;
+  real sigma_tau;
+  real mu_ypred7;
+}
+
+model {
+  mu_tau ~ normal(0, 10);
+  sigma_tau ~ gamma(1, 1);
+  sigma ~ gamma(1, 1);
+  mu_ypred7 ~ normal(mu_tau, sigma_tau);
+  for (k in 1:K) {
+    mu[k] ~ normal(mu_tau, sigma_tau);
+  }
+  for (k in 1:K) {
+    y[, k] ~ normal(mu[k], sigma);
+  }
+}
+
+generated quantities {
+  array[K] real ypred;
+  for (k in 1:K) {
+    ypred[k] = normal_rng(mu[k] , sigma);
+  }
+  array[N] vector[K] log_likelihood; // An array of vectors of the log likelihood
+  for (i in 1:N) {
+    for (k in 1:K) {
+      log_likelihood[i][k] = normal_lpdf(y[i][k] | mu[k], sigma);
+    }
+  }
+  real ypred7 = normal_rng(mu_ypred7, sigma);
+}
+
+"
+```
+
+Fitting the models:
+```{r}
+stan_data <- list(
+  y = factory,
+  N = nrow(factory),
+  K = ncol(factory)
+)
+
+file_separate <- file.path("C:/Users/nguye/Desktop/BDA/assignments/assignment 8", "model_separate.stan")
+model_separate <- cmdstan_model(file_separate)
+model_separate$compile(quiet = FALSE)
+result_separate <- model_separate$sample(data = stan_data, show_messages=FALSE)
+
+file_pooled <- file.path("C:/Users/nguye/Desktop/BDA/assignments/assignment 8", "model_pooled.stan")
+model_pooled <- cmdstan_model(file_pooled)
+model_pooled$compile(quiet = FALSE)
+result_pooled <- model_pooled$sample(data = stan_data, show_messages=FALSE)
+
+file_hierarchical <- file.path("C:/Users/nguye/Desktop/BDA/assignments/assignment 8", "model_hierarchical.stan")
+model_hierarchical <- cmdstan_model(file_hierarchical)
+model_hierarchical$compile(quiet = FALSE)
+result_hierarchical <- model_hierarchical$sample(data = stan_data, show_messages=FALSE)
+```
+
+## 2. 
+Compute the Pareto smoothed importance sampling leave-one-out (PSIS-LOO) expected log pointwise predictive density (elpd) values and the $\hat{k}$-values for each of the three models.\
+Hint! It will be convenient to visualize the $\hat{k}$-values for each model so that you can easily see how many of these values fall in the range $\hat{k} > 0.7$ to assess the reliability of the PSIS-LOO estimate for each model. You can read more about the theoretical guarantees for the accuracy of the estimate depending on $\hat{k}$ from (see the original article, but regarding this assignment, it suffices to understand that if all the $\hat{k}$-values are $\hat{k} \lesssim 0.7$, the PSIS-LOO estimate can be considered to be reliable, otherwise there is a concern that it may be biased (too optimistic, overestimating the predictive accuracy of the model).\
+
+### Separate model
+Example priors from assignment 7 is used:\
+$\mu_j \sim Normal(0, 10)$\
+$\sigma_j \sim gamma(1, 1)$\
+
+```{r}
+loo_separate <- result_separate$loo(variables="log_likelihood",r_eff=TRUE)
+cat("The PSIS-LOO elpd value of the separate model is\n")
+print(loo_separate$estimates[1][1])
+
+pareto_k <- loo_separate$diagnostics$pareto_k
+
+cat("\nThe k-hat values of the separate model is\n")
+print(loo_separate)
+
+barplot(pareto_k, main = "(Separate model) k-hat diagnostics\n critical red line = 0.7", xlab = "k-hat values", ylab = "magnitude", ylim=c(0,1), col = "blue")
+abline(h=0.7, col="red", lwd=2)
+```
+So it appears that the separate model is a little biased reliable there is one $\hat{k}$-value larger than 0.7\
+
+### Pooled model
+Example priors from assignment 7 is used:\
+$\mu \sim Normal(0, 10)$\
+$\sigma \sim gamma(1, 1)$\
+
+```{r}
+loo_pooled <- result_pooled$loo(variables="log_likelihood",r_eff=TRUE)
+cat("The PSIS-LOO elpd value of the pooled model is\n")
+print(loo_pooled$estimates[1][1])
+
+pareto_k <- loo_pooled$diagnostics$pareto_k
+
+cat("\nThe k-hat values of the pooled model is\n")
+print(loo_pooled)
+
+barplot(pareto_k, main = "(Pooled model) k-hat diagnostics\n critical red line = 0.7", xlab = "k-hat values", ylab = "magnitude", ylim=c(0,1), col = "blue")
+abline(h=0.7, col="red", lwd=2)
+```
+So it appears that the pooled model is reliable as all $\hat{k}$-values are smaller than 0.7\
+
+### Hierarchical model
+Example priors from assignment 7 is used:\
+$\mu_\tau \sim Normal(0, 10)$\
+$\sigma_\tau \sim gamma(1, 1)$\
+$\sigma \sim gamma(1, 1)$\
+
+```{r}
+loo_hierarchical <- result_hierarchical$loo(variables="log_likelihood",r_eff=TRUE)
+cat("The PSIS-LOO elpd value of the hierarchical model is\n")
+print(loo_hierarchical$estimates[1][1])
+
+pareto_k <- loo_hierarchical$diagnostics$pareto_k
+
+cat("\nThe k-hat values of the hierarchical model is\n")
+print(loo_hierarchical)
+
+barplot(pareto_k, main = "(Hierarchical model) k-hat diagnostics\n critical red line = 0.7", xlab = "k-hat values", ylab = "magnitude", ylim=c(0,1), col = "blue")
+abline(h=0.7, col="red", lwd=2)
+```
+
+So it appears that the hierachical model is reliable as all $\hat{k}$-values are smaller than 0.7\
+
+## 3. 
+Compute the effective number of parameters $p_{eff}$ for each of the three models.
+Hint! The estimated effective number of parameters in the model can be computed from equation (7.15) in the book, where $elpd_{loo-cv}$ is the PSIS-LOO value (sum of the LOO log densities) and lppd is given by equation (7.5) in the book.
+
+Equation (7.15)\
+$p_{eff} = lppd - lppd_{loo-cv}$
+
+Equation (7.5)\
+computed lppd = computed log pointwise predictive density\
+$\quad\quad\quad\quad\quad = \sum_{i=1}^n log \left(\frac{1}{S}\sum_{s=1}^Sp(y_i|\theta^s)\right)$
+
+The priors are similarly used as the parts above\
+
+### Separate model
+
+```{r}
+# A draws matrix of dimension S x N
+log_likelihood_separate <- result_separate$draws("log_likelihood", format = "matrix")
+
+S = nrow(log_likelihood_separate) # Number of draws from the model
+N = ncol(log_likelihood_separate) # Number of observations
+
+lppd = 0 # log pointwise predictive density
+
+for (i in (1:N)){
+  col_sum = sum(exp(log_likelihood_separate[, i]))
+  lppd = lppd + log((1/S)*col_sum)
+}
+
+# lppd_loocv 
+lppd_loocv = loo_separate$estimates[1][1]
+
+# Number of effective coefficients 
+p_eff = lppd - lppd_loocv
+cat("The p_eff for the separate model:", p_eff) 
+```
+### Pooled model
+
+```{r}
+# A draws matrix of dimension S x N
+log_likelihood_pooled <- result_pooled$draws("log_likelihood", format = "matrix")
+
+S = nrow(log_likelihood_pooled) # Number of draws from the model
+N = ncol(log_likelihood_pooled) # Number of observations
+
+lppd = 0 # log pointwise predictive density
+
+for (i in (1:N)){
+  col_sum = sum(exp(log_likelihood_pooled[, i]))
+  lppd = lppd + log((1/S)*col_sum)
+}
+
+# lppd_loocv 
+lppd_loocv = loo_pooled$estimates[1][1]
+
+# Number of effective coefficients 
+p_eff = lppd - lppd_loocv
+cat("The p_eff for the pooled model:", p_eff) 
+```
+### Hierarchical model
+```{r}
+# A draws matrix of dimension S x N
+log_likelihood_hierarchical <- result_hierarchical$draws("log_likelihood", format = "matrix")
+
+S = nrow(log_likelihood_hierarchical) # Number of draws from the model
+N = ncol(log_likelihood_hierarchical) # Number of observations
+
+lppd = 0 # log pointwise predictive density
+
+for (i in (1:N)){
+  col_sum = sum(exp(log_likelihood_hierarchical[, i]))
+  lppd = lppd + log((1/S)*col_sum)
+}
+
+# lppd_loocv 
+lppd_loocv = loo_hierarchical$estimates[1][1]
+
+# Number of effective coefficients 
+p_eff = lppd - lppd_loocv
+cat("The p_eff for the hierarchical model:", p_eff) 
+```
+
+## 4. 
+Assess how reliable the PSIS-LOO estimates are for the three models based on the $\hat{k}$-values.\
+
+As concluded from part (2), all of $\hat{k}$-values are lower than 0.7 in the pooled and hierarchical model, making them highly and equally reliable. However, there is some $\hat{k}$-value that is higher than 0.7 in the separate model, making it a little biased.\
+
+## 5. 
+An assessment of whether there are differences between the models with regard to the $elpd_{loo-cv}$, and if so, which model should be selected according to PSIS-LOO.\
+```{r}
+print(loo_compare(x = list(loo_separate=loo_separate, loo_pooled=loo_pooled, loo_hierarchical=loo_hierarchical)))
+
+cat("\nThe PSIS-LOO elpd value of the separate model is\n")
+print(loo_separate$estimates[1][1])
+
+cat("\nThe PSIS-LOO elpd value of the pooled model is\n")
+print(loo_pooled$estimates[1][1])
+
+cat("\nThe PSIS-LOO elpd value of the hierarchical model is\n")
+print(loo_hierarchical$estimates[1][1])
+```
+From the comparison, it is observed that the hierarchical is the best method with regards to both criteria elpd_diff and se_diff. Additionally, the higher the PSIS-LOO elpd value, the better the model. Therefore, the hierarchical model should be chosen as it has the highest PSIS-LOO elpd value.\
+
+## 6. 
+Both the Stan and R code should be included in your report.\
+They are already included in this report above.

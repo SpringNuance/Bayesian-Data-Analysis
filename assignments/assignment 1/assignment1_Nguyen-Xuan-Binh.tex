@@ -1,0 +1,527 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+]{article}
+\title{BDA - Assignment 1}
+\author{Anonymous}
+\date{}
+
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={BDA - Assignment 1},
+  pdfauthor={Anonymous},
+  colorlinks=true,
+  linkcolor={Maroon},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={blue},
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\begin{document}
+\maketitle
+
+{
+\hypersetup{linkcolor=}
+\setcounter{tocdepth}{1}
+\tableofcontents
+}
+\hypertarget{loaded-packages}{%
+\section{Loaded packages}\label{loaded-packages}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(aaltobda)}
+\FunctionTok{library}\NormalTok{(ggplot2)}
+\FunctionTok{library}\NormalTok{(rstan)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning: package 'rstan' was built under R version 4.1.3
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: StanHeaders
+\end{verbatim}
+
+\begin{verbatim}
+## Warning: package 'StanHeaders' was built under R version 4.1.3
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## rstan version 2.26.13 (Stan version 2.26.1)
+\end{verbatim}
+
+\begin{verbatim}
+## For execution on a local, multicore CPU with excess RAM we recommend calling
+## options(mc.cores = parallel::detectCores()).
+## To avoid recompilation of unchanged Stan programs, we recommend calling
+## rstan_options(auto_write = TRUE)
+## For within-chain threading using `reduce_sum()` or `map_rect()` Stan functions,
+## change `threads_per_chain` option:
+## rstan_options(threads_per_chain = 1)
+\end{verbatim}
+
+\begin{verbatim}
+## Do not specify '-march=native' in 'LOCAL_CPPFLAGS' or a Makevars file
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(markmyassignment)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning: package 'markmyassignment' was built under R version 4.1.3
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{assignment\_path }\OtherTok{\textless{}{-}}
+\FunctionTok{paste}\NormalTok{(}\StringTok{"https://github.com/avehtari/BDA\_course\_Aalto/"}\NormalTok{,}
+\StringTok{"blob/master/assignments/tests/assignment1.yml"}\NormalTok{, }\AttributeTok{sep=}\StringTok{""}\NormalTok{)}
+\FunctionTok{set\_assignment}\NormalTok{(assignment\_path)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Assignment set:
+## assignment1: Bayesian Data Analysis: Assignment 1
+## The assignment contain the following (3) tasks:
+## - p_red
+## - p_box
+## - p_identical_twin
+\end{verbatim}
+
+\hypertarget{exercise-1-basic-probability-theory-notation-and-terms}{%
+\section{Exercise 1 (Basic probability theory notation and
+terms)}\label{exercise-1-basic-probability-theory-notation-and-terms}}
+
+Explain each of the following terms with one sentence: - probability:
+Probability is a way of quantifying the belief of something being true
+or false.\\
+- probability mass\\
+- probability density\\
+- probability mass function (pmf)\\
+- probability density function (pdf)\\
+- probability distribution\\
+- discrete probability distribution\\
+- continuous probability distribution\\
+- cumulative distribution function (cdf)\\
+- likelihood\\
+
+\hypertarget{exercise-2-basic-computer-skills}{%
+\section{Exercise 2 (Basic computer
+skills)}\label{exercise-2-basic-computer-skills}}
+
+\hypertarget{a}{%
+\subsection{a)}\label{a}}
+
+Plot the density function of Beta-distribution, with mean = 0.2 and
+variance = 0.01. The parameters α and β of the Beta-distribution are
+related to the mean and variance Hint! Useful R functions: seq(), plot()
+and dbeta() define range
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{p }\OtherTok{=} \FunctionTok{seq}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{1}\NormalTok{, }\AttributeTok{length=}\DecValTok{100}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+create plot of Beta distribution with mean = 0.2 and variance = 0.01
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{mu }\OtherTok{=} \FloatTok{0.2}
+\NormalTok{sigma2 }\OtherTok{=} \FloatTok{0.01}
+\NormalTok{alpha }\OtherTok{=}\NormalTok{ mu }\SpecialCharTok{*}\NormalTok{ ( ((mu }\SpecialCharTok{*}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ mu))}\SpecialCharTok{/}\NormalTok{sigma2) }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{)}
+\NormalTok{beta }\OtherTok{=}\NormalTok{ (alpha }\SpecialCharTok{*}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{{-}}\NormalTok{ mu))}\SpecialCharTok{/}\NormalTok{mu}
+\FunctionTok{plot}\NormalTok{(p, }\FunctionTok{dbeta}\NormalTok{(p, alpha, beta), }\AttributeTok{ylab=}\StringTok{\textquotesingle{}density\textquotesingle{}}\NormalTok{,}
+     \AttributeTok{type =}\StringTok{\textquotesingle{}l\textquotesingle{}}\NormalTok{, }\AttributeTok{col=}\StringTok{\textquotesingle{}purple\textquotesingle{}}\NormalTok{, }\AttributeTok{main=}\StringTok{\textquotesingle{}Beta Distribution\textquotesingle{}}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{assignment1_Nguyen-Xuan-Binh_files/figure-latex/unnamed-chunk-3-1.pdf}
+\#\# b) Take a sample of 1000 random numbers from the above distribution
+and plot a histogram of the results. Compare visually to the density
+function. Hint! Useful R functions: rbeta() and hist()
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{sample }\OtherTok{=} \FunctionTok{rbeta}\NormalTok{(}\DecValTok{1000}\NormalTok{, alpha, beta)}
+\FunctionTok{hist}\NormalTok{(sample, }\AttributeTok{breaks=}\DecValTok{50}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{assignment1_Nguyen-Xuan-Binh_files/figure-latex/unnamed-chunk-4-1.pdf}
+The histogram of random sampled points closely resemble the density
+function of Beta distribution above
+
+\hypertarget{c}{%
+\subsection{c)}\label{c}}
+
+Compute the sample mean and variance from the drawn sample. Verify that
+they match (roughly) to the true mean and variance of the distribution.
+Hint! Useful R functions: mean() and var() The sample mean is:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{mean}\NormalTok{(sample)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.196327
+\end{verbatim}
+
+The sample mean is close to the true mean = 0.2
+
+The sample variance is:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{var}\NormalTok{(sample)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.009492876
+\end{verbatim}
+
+The sample variance is close to the true variance = 0.01
+
+\hypertarget{d}{%
+\subsection{d)}\label{d}}
+
+Estimate the central 95\% probability interval of the distribution from
+the drawn samples. Hint! Useful R functions: quantile()
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{quantile}\NormalTok{(sample, }\AttributeTok{probs=}\FunctionTok{c}\NormalTok{(}\FloatTok{0.025}\NormalTok{, }\FloatTok{0.975}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##       2.5%      97.5% 
+## 0.04867702 0.41789317
+\end{verbatim}
+
+\hypertarget{exercise-3-bayes-theorem}{%
+\section{Exercise 3 (Bayes' theorem)}\label{exercise-3-bayes-theorem}}
+
+A group of researchers has designed a new inexpensive and painless test
+for detecting lung cancer. The test is intended to be an initial
+screening test for the population in general. A positive result
+(presence of lung cancer) from the test would be followed up immediately
+with medication, surgery or more extensive and expensive test. The
+researchers know from their studies the following facts:\\
+- Test gives a positive result in 98\% of the time when the test subject
+has lung cancer.\\
+- Test gives a negative result in 96\% of the time when the test subject
+does not have lung cancer.\\
+- In general population approximately one person in 1000 has lung
+cancer.\\
+The researchers are happy with these preliminary results (about 97\%
+success rate), and wish to get the test to market as soon as possible.
+How would you advise them? Base your answer on Bayes' rule
+computations.\\
+Hint : Relatively high false negative (cancer doesn't get detected) or
+high false positive (unnecessarily administered medication) rates are
+typically bad and undesirable in tests.\\
+Hint : Here are some probability values that can help you figure out if
+you copied the right conditional probabilities from the question.\\
+- P(Test gives positive \textbar{} Subject does not have lung cancer) =
+4\%\\
+- P(Test gives positive and Subject has lung cancer) = 0.098\% this is
+also referred to as the joint probability of test being positive and the
+subject having lung cancer\\
+
+Let + sign be positive test result and - sign be negative test result
+From the knowledge, we know that:\\
+- \(P(+|have-cancer) = 98\% => P(-|have-cancer) = 2\%\)\\
+- \(P(-|no-cancer) = 96\% => P(+|no-cancer) = 4\%\)\\
+- \(P(have-cancer) = 0.1\% => P(no-cancer) = 99.9\%\)\\
+-
+\(P(+|have-cancer or -|no-cancer) = \frac{P(+|have-cancer) + P(+|no-cancer)}{2} = \frac{(98\% + 96\%)}{2} = 97\%\)\\
+From these identities, we can calculate many probability values:\\
+- \(P(+) = \frac{P(+|have-cancer) + P(+|no-cancer)}{2} = 51\%\)\\
+- \(P(-) = \frac{P(-|have-cancer) + P(-|no-cancer)}{2} = 49\%\)\\
+The posteriors can be calculated as: -
+\(P(have cancer|+) = \frac{P(+|have cancer)P(have cancer)}{P(+)} = \frac{98\% 0.1\%}{51\%} \approx 19.21\%\)\\
+\# Exercise 4 (Bayes' theorem) We have three boxes, A, B, and C. There
+are - 2 red balls and 5 white balls in the box A, - 4 red balls and 1
+white ball in the box B, and - 1 red ball and 3 white balls in the box
+C. Consider a random experiment in which one of the boxes is randomly
+selected and from that box, one ball is randomly picked up. After
+observing the color of the ball it is replaced in the box it came from.
+Suppose also that on average box A is selected 40\% of the time and box
+B 10\% of the time (i.e.~P(A) = 0.4). a) What is the probability of
+picking a red ball? b) If a red ball was picked, from which box it most
+probably came from? Implement two functions in R that computes the
+probabilities.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{p\_red }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(boxes)\{}
+  \DecValTok{13}
+\NormalTok{\}}
+\NormalTok{p\_box }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(boxes)\{}
+  \DecValTok{12}
+\NormalTok{\}}
+\CommentTok{\# To check your code/functions, just run}
+\FunctionTok{mark\_my\_assignment}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning: package 'testthat' was built under R version 4.1.3
+\end{verbatim}
+
+\begin{verbatim}
+## v | F W S  OK | Context
+## 
+## / |         0 | task-1-subtask-1-tests                                          
+## / |         0 | p_red()                                                         
+## x | 2       2 | p_red()
+## --------------------------------------------------------------------------------
+## Failure (test-task-1-subtask-1-tests.R:16:3): p_red()
+## p_red(boxes = boxes) not equivalent to 0.3928571.
+## 1/1 mismatches
+## [1] 13 - 0.393 == 12.6
+## Error: Incorrect result for matrix(c(2,2,1,5,5,1), ncol = 2)
+## 
+## Failure (test-task-1-subtask-1-tests.R:21:3): p_red()
+## p_red(boxes = boxes) not equivalent to 0.5.
+## 1/1 mismatches
+## [1] 13 - 0.5 == 12.5
+## Error: Incorrect result for matrix(c(1,1,1,1,1,1), ncol = 2)
+## --------------------------------------------------------------------------------
+## 
+## / |         0 | task-2-subtask-1-tests                                          
+## / |         0 | p_box()                                                         
+## x | 2       2 | p_box()
+## --------------------------------------------------------------------------------
+## Failure (test-task-2-subtask-1-tests.R:15:3): p_box()
+## p_box(boxes = boxes) not equivalent to c(0.29090909, 0.07272727, 0.63636364).
+## Lengths differ: 1 is not 3
+## Error: Incorrect result for matrix(c(2,2,1,5,5,1), ncol = 2)
+## 
+## Failure (test-task-2-subtask-1-tests.R:19:3): p_box()
+## p_box(boxes = boxes) not equivalent to c(0.4, 0.1, 0.5).
+## Lengths differ: 1 is not 3
+## Error: Incorrect result for matrix(c(1,1,1,1,1,1), ncol = 2)
+## --------------------------------------------------------------------------------
+## 
+## / |         0 | task-3-subtask-1-tests                                          
+## / |         0 | p_identical_twin()                                              
+## - | 1       0 | p_identical_twin()                                              
+## x | 2       0 | p_identical_twin() [0.1s]
+## --------------------------------------------------------------------------------
+## Failure (test-task-3-subtask-1-tests.R:8:3): p_identical_twin()
+## exists("p_identical_twin") is not TRUE
+## 
+## `actual`:   FALSE
+## `expected`: TRUE 
+## Error: p_identical_twin() is missing
+## 
+## Error (test-task-3-subtask-1-tests.R:10:3): p_identical_twin()
+## Error in `checkFunction(x, args, ordered, nargs, null.ok)`: object 'p_identical_twin' not found
+## Backtrace:
+##  1. checkmate::expect_function(...)
+##       at test-task-3-subtask-1-tests.R:10:2
+##  2. checkmate::checkFunction(x, args, ordered, nargs, null.ok)
+## --------------------------------------------------------------------------------
+## 
+## == Results =====================================================================
+## Duration: 0.2 s
+## 
+## [ FAIL 6 | WARN 0 | SKIP 0 | PASS 4 ]
+\end{verbatim}
+
+\hypertarget{exercise-5-bayes-theorem}{%
+\section{Exercise 5 (Bayes' theorem)}\label{exercise-5-bayes-theorem}}
+
+Assume that on average fraternal twins (two fertilized eggs and then
+could be of different sex) occur once in 150 births and identical twins
+(single egg divides into two separate embryos, so both have the same
+sex) once in 400 births (Note! This is not the true value, see Exercise
+1.6, page 28, in BDA3). American male singer-actor Elvis Presley (1935 -
+1977) had a twin brother who died in birth. Assume that an equal number
+of boys and girls are born on average. What is the probability that
+Elvis was an identical twin? Show the steps how you derived the
+equations to compute that probability. Implement this as a function in R
+that computes the probability.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{p\_identical\_twin }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(fraternal\_prob, identical\_prob)\{}
+  \FunctionTok{return}\NormalTok{(}\DecValTok{14}\NormalTok{)}
+\NormalTok{\}}
+
+\FunctionTok{mark\_my\_assignment}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## v | F W S  OK | Context
+## 
+## / |         0 | task-1-subtask-1-tests                                          
+## / |         0 | p_red()                                                         
+## x | 2       2 | p_red()
+## --------------------------------------------------------------------------------
+## Failure (test-task-1-subtask-1-tests.R:16:3): p_red()
+## p_red(boxes = boxes) not equivalent to 0.3928571.
+## 1/1 mismatches
+## [1] 13 - 0.393 == 12.6
+## Error: Incorrect result for matrix(c(2,2,1,5,5,1), ncol = 2)
+## 
+## Failure (test-task-1-subtask-1-tests.R:21:3): p_red()
+## p_red(boxes = boxes) not equivalent to 0.5.
+## 1/1 mismatches
+## [1] 13 - 0.5 == 12.5
+## Error: Incorrect result for matrix(c(1,1,1,1,1,1), ncol = 2)
+## --------------------------------------------------------------------------------
+## 
+## / |         0 | task-2-subtask-1-tests                                          
+## / |         0 | p_box()                                                         
+## x | 2       2 | p_box()
+## --------------------------------------------------------------------------------
+## Failure (test-task-2-subtask-1-tests.R:15:3): p_box()
+## p_box(boxes = boxes) not equivalent to c(0.29090909, 0.07272727, 0.63636364).
+## Lengths differ: 1 is not 3
+## Error: Incorrect result for matrix(c(2,2,1,5,5,1), ncol = 2)
+## 
+## Failure (test-task-2-subtask-1-tests.R:19:3): p_box()
+## p_box(boxes = boxes) not equivalent to c(0.4, 0.1, 0.5).
+## Lengths differ: 1 is not 3
+## Error: Incorrect result for matrix(c(1,1,1,1,1,1), ncol = 2)
+## --------------------------------------------------------------------------------
+## 
+## / |         0 | task-3-subtask-1-tests                                          
+## / |         0 | p_identical_twin()                                              
+## x | 3       2 | p_identical_twin()
+## --------------------------------------------------------------------------------
+## Failure (test-task-3-subtask-1-tests.R:13:3): p_identical_twin()
+## p_identical_twin(fraternal_prob = (1/125), identical_prob = (1/300)) not equivalent to 0.4545455.
+## 1/1 mismatches
+## [1] 14 - 0.455 == 13.5
+## Error: Incorrect result for fraternal_prob = 1/125 and identical_prob = 1/300
+## 
+## Failure (test-task-3-subtask-1-tests.R:16:3): p_identical_twin()
+## p_identical_twin(fraternal_prob = 1/100, identical_prob = 1/500) not equivalent to 0.2857143.
+## 1/1 mismatches
+## [1] 14 - 0.286 == 13.7
+## Error: Incorrect result for fraternal_prob = 1/100 and identical_prob = 1/500
+## 
+## Failure (test-task-3-subtask-1-tests.R:19:3): p_identical_twin()
+## p_identical_twin(fraternal_prob = 1/10, identical_prob = 1/20) not equivalent to 0.5.
+## 1/1 mismatches
+## [1] 14 - 0.5 == 13.5
+## Error: Incorrect result for fraternal_prob = 1/10 and identical_prob = 1/20
+## --------------------------------------------------------------------------------
+## 
+## == Results =====================================================================
+## Duration: 0.1 s
+## 
+## [ FAIL 7 | WARN 0 | SKIP 0 | PASS 6 ]
+\end{verbatim}
+
+\end{document}
